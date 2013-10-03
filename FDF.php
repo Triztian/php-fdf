@@ -166,7 +166,7 @@ class FDF
         for ($ii= 0; $ii< strlen($ss); ++$ii) {
             $ordinal = ord($ss[$ii]);
             if ($ordinal < self::EXCLAMATION || 
-                self::LETTER_V < $ordinal) || 
+                self::LETTER_V < $ordinal || 
                 $ordinal == self::HASHMARK) 
             {
                  $ss_esc.= sprintf( "#%02x", $ordinal); // use a hex code
