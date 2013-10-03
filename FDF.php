@@ -22,14 +22,6 @@ class FDF
     const FDF_BOOL_TRUE       = 'Yes';
     const FDF_BOOL_FALSE      = 'No';
 
-    // Constants to escape certain characters.
-    const HASHMARK      = 0x23;
-    const OPENPAREN     = 0x28;
-    const CLOSEPAREN    = 0x29;
-    const BACKSLASH     = 0x5c;
-    const EXCLAMATION   = 33;
-    const LETTER_V      = 126;
-
     private $data;
     private $readonlyFields;
     private $hiddenFields;
