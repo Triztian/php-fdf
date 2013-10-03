@@ -6,19 +6,19 @@ class FDF
     const FDF_FIELDS_OPEN     = "<<\n/Fields [\n";
     const FDF_FIELDS_CLOSE    = "]\n";
     const FDF_END_OBJ         = ">>\n>>\nendobj\n";
-    const FDF_TRAILER         = "trailer\n\n<n/Root 1 0 R\n>>\n";
+    const FDF_TRAILER         = "trailer\n\n<<\n/Root 1 0 R\n>>\n";
     const FDF_EOF             = "%%EOF\n\x0a";
 
     // Templates to create entries withn the FDF file.
-    const FDF_TEMPLATE_DATA   = "<<\n/V%s\n/T (%s)\n%s\n%s\n>>\n";
-    const FDF_TEMPLATE_STRING = "<<\n/V /%s\n/T (%s)\n%s\n%s\n>>\n";
+    const FDF_TEMPLATE_STRING = "<<\n/V (%s)\n/T (%s)\n%s\n%s\n>>\n";
+    const FDF_TEMPLATE_DATA   = "<<\n/V/%s\n/T (%s)\n%s\n%s\n>>\n";
     const FDF_TEMPLATE_URL    = "/F (%s)\n";
 
     // FDF Specific field values
-    const FDF_HIDDEN_SET      = '\SetF 2';
-    const FDF_HIDDEN_CLEAR    = '\ClrF 2';
-    const FDF_READONLY_SET    = '\SetFf 1';
-    const FDF_READONLY_CLEAR  = '\ClrFf 1';
+    const FDF_HIDDEN_SET      = '/SetF 2';
+    const FDF_HIDDEN_CLEAR    = '/ClrF 2';
+    const FDF_READONLY_SET    = '/SetFf 1';
+    const FDF_READONLY_CLEAR  = '/ClrFf 1';
     const FDF_BOOL_TRUE       = 'Yes';
     const FDF_BOOL_FALSE      = 'No';
 
@@ -90,17 +90,11 @@ class FDF
      */
     private static function toFDFStringField($name, $value, 
                                              $isHidden=false, $isReadonly=false) {
-        $val= $value;
-        if (gettype($value) == 'boolean')
-            $val = $value ? self::FDF_BOOL_TRUE : self::FDF_BOOL_FALSE;
-
         return sprintf(self::FDF_TEMPLATE_STRING, 
-            self::smartEncode($val),
+            self::smartEncode($value),
             self::smartEncode($name),
-            self::smartEncode($isHidden ? 
-                              self::FDF_HIDDEN_SET : self::FDF_HIDDEN_CLEAR),
-            self::smartEncode($isReadonly ? 
-                              self::FDF_READONLY_SET : self::FDF_READONLY_CLEAR)
+            $isHidden ? self::FDF_HIDDEN_SET : self::FDF_HIDDEN_CLEAR,
+            $isReadonly ? self::FDF_READONLY_SET : self::FDF_READONLY_CLEAR
         );
     }
 
@@ -117,66 +111,17 @@ class FDF
      */
     private static function toFDFDataField($name, $value,
                                            $isHidden=false, $isReadonly=false) {
+        $val= $value;
+        if (gettype($value) == 'boolean')
+            $val = $value ? self::FDF_BOOL_TRUE : self::FDF_BOOL_FALSE;
+
         return sprintf(self::FDF_TEMPLATE_DATA, 
-            self::smartEncode($value),
+            $val,
             self::smartEncode($name),
-            self::smartEncode($isHidden ? 
-                              self::FDF_HIDDEN_SET : self::FDF_HIDDEN_CLEAR),
-            self::smartEncode($isReadonly ? 
-                              self::FDF_READONLY_SET : self::FDF_READONLY_CLEAR)
+            $isHidden ? self::FDF_HIDDEN_SET : self::FDF_HIDDEN_CLEAR,
+            $isReadonly ? self::FDF_READONLY_SET : self::FDF_READONLY_CLEAR
         );
     }
-
-
-    /**
-     * Escape strings that will go into the PDF file
-     *
-     * @param ss The string to be escaped.
-     *
-     * @return The escaped string.
-     */
-    private static function escapeString($ss) {
-        $backslash= chr(self::BACKSLASH);
-        $ss_esc= '';
-        for( $i= 0; $i < strlen($ss); ++$i ) {
-            $ordinal= ord($ss[$i]);
-            if ($ordinal == self::OPENPAREN  ||
-                $ordinal == self::CLOSEPAREN || 
-                $ordinal == self::BACKSLASH )
-            {
-                $ss_esc.= $backslash . $ss[$i];
-            } else if ( $ordinal < 32 || 126 < $ordinal) {
-                $ss_esc.= sprintf("\\%03o", $ordinal); // use an octal code
-            } else {
-                $ss_esc.= $ss[$i];
-            }
-        }
-        return $ss_esc;
-    }
-
-    /**
-     * Escape a PDF name.
-     *
-     * @param ss The string to be escaped.
-     *
-     * @return The escaped name
-     */
-    private static function escapeName($ss) {
-        $ss_esc= '';
-        for ($ii= 0; $ii< strlen($ss); ++$ii) {
-            $ordinal = ord($ss[$ii]);
-            if ($ordinal < self::EXCLAMATION || 
-                self::LETTER_V < $ordinal || 
-                $ordinal == self::HASHMARK) 
-            {
-                 $ss_esc.= sprintf( "#%02x", $ordinal); // use a hex code
-            } else {
-                 $ss_esc.= $ss[$ii];
-            }
-        }
-        return $ss_esc;
-    }
-
 
     /**
      * Encode the string in UTF-16 BE, escaping the parens.
@@ -186,10 +131,10 @@ class FDF
      * @return The encoded string.
      */
     private static function smartEncode($s) {
-        $utf16= mb_convert_encoding($s, 'UTF-16BE');
+        $utf16= mb_convert_encoding($s, 'UCS-2');
         $safe= $utf16;
         $safe= mb_eregi_replace('\\x00\)', '\x00\\\)', $safe);
         $safe= mb_eregi_replace('\\x00\(', '\x00\\\(', $safe);
-        return $safe;
+        return pack("n",0xFEFF) . $safe;
     }
 }

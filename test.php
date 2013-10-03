@@ -4,8 +4,9 @@ $readonly= array();
 $hidden= array();
 
 $fields= array(
-    'Date' => date('Y-m-d'),
-    'PO #' => 'Test PO'
+    'Shipper'       => 'John Smith',
+    'PO#'          => '555-1234',
+    'FXF Priority'  => true
 );
 $fdf= new FDF($fields, $readonly, $hidden);
 print((string)$fdf);
