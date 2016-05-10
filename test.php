@@ -4,7 +4,7 @@ $readonly= array();
 $hidden= array();
 
 $fields= array(
-    'Shipper'       => 'John Smith',
+    'Shipper'       => 'John Smith c\o Jane',
     'PO#'          => '800) 555-1234',
     'FXF Priority'  => true
 );

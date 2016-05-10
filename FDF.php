@@ -132,6 +132,7 @@ class FDF
         $safe= $utf16;
         $safe= mb_eregi_replace('\)', '\\)', $safe);
         $safe= mb_eregi_replace('\(', '\\(', $safe);
+        $safe= mb_eregi_replace('\\\\', '\\\\\\', $safe);
         return pack("n",0xFEFF) . $safe;
     }
 }
