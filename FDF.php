@@ -130,8 +130,8 @@ class FDF
     private static function smartEncode($s) {
         $utf16= mb_convert_encoding($s, 'UTF-16BE');
         $safe= $utf16;
-        $safe= mb_eregi_replace('\\x00\)', '\x00\\\)', $safe);
-        $safe= mb_eregi_replace('\\x00\(', '\x00\\\(', $safe);
+        $safe= mb_eregi_replace('\)', '\\)', $safe);
+        $safe= mb_eregi_replace('\(', '\\(', $safe);
         return pack("n",0xFEFF) . $safe;
     }
 }
