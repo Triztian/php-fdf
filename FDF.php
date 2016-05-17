@@ -117,16 +117,22 @@ class FDF
 
     /**
      * Encode the string in UTF-16 BE, escaping the parens.
+     *
+     * UCS-2 should now be considered obsolete.
+     * It no longer refers to an encoding form in either 10646 or the Unicode Standard.
+     * https://www.ietf.org/rfc/rfc2781.txt
+     * https://en.wikipedia.org/wiki/UTF-16
      * 
      * @param s The string to be encoded.
      * 
      * @return The encoded string.
      */
     private static function smartEncode($s) {
-        $utf16= mb_convert_encoding($s, 'UCS-2');
+        $utf16= mb_convert_encoding($s, 'UTF-16BE');
         $safe= $utf16;
-        $safe= mb_eregi_replace('\\x00\)', '\x00\\\)', $safe);
-        $safe= mb_eregi_replace('\\x00\(', '\x00\\\(', $safe);
+        $safe= mb_eregi_replace('\)', '\\)', $safe);
+        $safe= mb_eregi_replace('\(', '\\(', $safe);
+        $safe= mb_eregi_replace('\\\\', '\\\\\\', $safe);
         return pack("n",0xFEFF) . $safe;
     }
 }
